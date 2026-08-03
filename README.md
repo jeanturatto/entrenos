@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="apps/client/assets/images/icon.png" alt="Símbolo do EntreNós" width="128" />
+  <img src="entrenos_logo.png" alt="Logo do EntreNós" width="384" />
 </p>
 
 <h1 align="center">EntreNós</h1>
