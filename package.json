@@ -1,0 +1,40 @@
+{
+  "name": "entrenos",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aplicativo universal para organização da vida a dois.",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @entrenos/client start",
+    "env:check": "node scripts/check-environment.mjs",
+    "assets:generate": "node scripts/generate-brand-assets.mjs",
+    "audit:dependencies": "pnpm audit --prod --audit-level high",
+    "web": "pnpm --filter @entrenos/client web",
+    "android": "pnpm --filter @entrenos/client android",
+    "ios": "pnpm --filter @entrenos/client ios",
+    "lint": "pnpm -r --if-present run lint",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "test": "pnpm -r --if-present run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
+    "build:web": "pnpm --filter @entrenos/client export:web",
+    "build:mobile": "pnpm --filter @entrenos/client export:mobile",
+    "doctor": "expo-doctor apps/client",
+    "db:lint": "supabase db lint --local --level warning",
+    "db:test": "supabase test db",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:status": "supabase status"
+  },
+  "devDependencies": {
+    "expo-doctor": "1.20.1",
+    "pngjs": "7.0.0",
+    "prettier": "3.9.6",
+    "supabase": "2.111.0"
+  }
+}
