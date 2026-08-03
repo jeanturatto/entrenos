@@ -1,6 +1,6 @@
 # EntreNós
 <p align="center">
-  <img src="apps/client/assets/images/icon.png" alt="Sem LOGOTIPO ainda galera =(" width="128" />
+  <img src="https://github.com/jeanturatto/entrenos/blob/main/entrenos_logo.png" alt="Logo EntreNós" width="128" />
 </p>
 
 Aplicativo universal para organização da vida a dois, construído com privacidade, consentimento, igualdade e transparência como regras do domínio.
