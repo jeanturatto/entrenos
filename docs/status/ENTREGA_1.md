@@ -19,7 +19,10 @@
 | Console web            | Nenhum erro ou aviso durante a jornada testada                   |
 | Marca provisória       | Ícone, splash, adaptive icon e favicon originais e reproduzíveis |
 | Segredos               | Busca por padrões de credenciais sem ocorrências                 |
-| CI                     | Jobs de aplicação e banco configurados                           |
+| GitHub                 | Repositório conectado e branch `main` sincronizada               |
+| CI                     | Jobs de aplicação e banco executados com sucesso                 |
+| Supabase público       | URL e chave publicável validadas no endpoint de autenticação     |
+| Expo/EAS               | Conta, projeto, pacote Android e bundle iOS confirmados          |
 
 ## Banco preparado
 
@@ -43,11 +46,15 @@ pnpm exec supabase db push --dry-run
 
 Docker permanece opcional para testes locais isolados. A CI executará os testes do banco em um runner Linux com Docker.
 
+Os testes do banco e da aplicação foram aprovados na [primeira execução completa da CI](https://github.com/jeanturatto/entrenos/actions/runs/30852379773).
+
 ## Pendência 2 — Builds móveis assinadas
 
-Os bundles JavaScript/Hermes para Android e iOS foram gerados. O Project ID e o proprietário Expo/EAS já estão configurados localmente. APK/AAB e IPA assinados ainda exigem autenticar o CLI e, para publicação, vincular as contas Google e Apple do proprietário.
+Os bundles JavaScript/Hermes para Android e iOS foram gerados. A conta foi autenticada e o Project ID, o proprietário Expo/EAS, o pacote Android e o bundle iOS foram confirmados.
 
 O `eas.json` já possui perfis de desenvolvimento, preview e produção. Não foram usados cadastros ou credenciais de terceiros.
+
+O primeiro build interno Android foi solicitado e permanece na fila do EAS. Seu andamento pode ser consultado na [página oficial do build](https://expo.dev/accounts/entrenos2/projects/entrenos/builds/28a5394e-6c3a-4a60-8527-146c66e02a6b). Um build de produção não será consumido antes da validação do artefato interno. O build iOS dependerá do fluxo de assinatura Apple do proprietário.
 
 ## Risco conhecido
 
@@ -55,8 +62,8 @@ A auditoria registra uma vulnerabilidade moderada transitiva em `uuid@7.0.3`, us
 
 ## Gate para declarar a entrega totalmente aceita
 
-1. Autenticar e vincular o Supabase CLI ao projeto de desenvolvimento.
-2. Revisar o `db push --dry-run` e validar a migration no banco de desenvolvimento.
-3. Autenticar o Expo/EAS CLI no projeto já configurado.
-4. Gerar ao menos um build interno Android e um build interno iOS.
-5. Enviar o código ao GitHub e validar a primeira execução da CI.
+- [ ] Autenticar e vincular o Supabase CLI ao projeto de desenvolvimento.
+- [ ] Revisar o `db push --dry-run` e validar a migration no banco de desenvolvimento.
+- [x] Autenticar o Expo/EAS CLI no projeto configurado.
+- [ ] Concluir e instalar o build interno Android; preparar o iOS quando aplicável.
+- [x] Enviar o código ao GitHub e validar a primeira execução da CI.

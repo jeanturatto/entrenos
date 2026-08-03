@@ -86,18 +86,18 @@ O escopo completo está no [Plano Mestre](docs/PLANO_MESTRE.md).
 
 Estamos na **Entrega 1 — Fundação executável**, em fase final. O objetivo desta etapa é provar que a mesma aplicação pode ser verificada, testada e gerada para web, Android e iOS antes de desenvolver os módulos do produto.
 
-| Área                       | Estado       | Evidência atual                                   |
-| -------------------------- | ------------ | ------------------------------------------------- |
-| Planejamento e arquitetura | Concluído    | Escopo, stack e decisões documentados             |
-| Cliente universal          | Concluído    | Expo Router para web, Android e iOS               |
-| Interface inicial          | Concluído    | Tema, navegação, marca provisória e duas rotas    |
-| Responsividade inicial     | Validada     | Jornada testada em celular e desktop              |
-| Regras de privacidade      | Em andamento | Domínio isolado e quatro testes automatizados     |
-| Banco inicial              | Preparado    | Migration, RLS, consentimentos e auditoria        |
-| Qualidade automatizada     | Concluída    | Formatação, lint, tipos, testes, doctor e exports |
-| Supabase em nuvem          | Pendente     | Depende da criação e vinculação do projeto `dev`  |
-| Builds móveis instaláveis  | Pendente     | Depende da conta Expo/EAS do proprietário         |
-| Primeira execução da CI    | Pendente     | Depende do repositório remoto no GitHub           |
+| Área                       | Estado       | Evidência atual                                     |
+| -------------------------- | ------------ | --------------------------------------------------- |
+| Planejamento e arquitetura | Concluído    | Escopo, stack e decisões documentados               |
+| Cliente universal          | Concluído    | Expo Router para web, Android e iOS                 |
+| Interface inicial          | Concluído    | Tema, navegação, marca provisória e duas rotas      |
+| Responsividade inicial     | Validada     | Jornada testada em celular e desktop                |
+| Regras de privacidade      | Em andamento | Domínio isolado e quatro testes automatizados       |
+| Banco inicial              | Preparado    | Migration, RLS, consentimentos e auditoria          |
+| Qualidade automatizada     | Concluída    | Formatação, lint, tipos, testes, doctor e exports   |
+| Supabase em nuvem          | Parcial      | URL e chave pública validadas; vínculo CLI pendente |
+| Builds móveis instaláveis  | Processando  | Build interno Android na fila; iOS pendente         |
+| Integração contínua        | Validada     | Jobs de aplicação e banco aprovados no GitHub       |
 
 Após o aceite desta fundação, a próxima entrega implementará o design system completo. Em seguida virão autenticação, perfis e formação segura do casal.
 
