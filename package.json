@@ -9,6 +9,8 @@
   },
   "scripts": {
     "dev": "pnpm --filter @entrenos/client start",
+    "dev:go": "pnpm --filter @entrenos/client start:go",
+    "dev:go:tunnel": "pnpm --filter @entrenos/client start:go:tunnel",
     "env:check": "node scripts/check-environment.mjs",
     "assets:generate": "node scripts/generate-brand-assets.mjs",
     "audit:dependencies": "pnpm audit --prod --audit-level high",
