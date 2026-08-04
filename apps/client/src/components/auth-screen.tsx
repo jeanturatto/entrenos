@@ -1,4 +1,5 @@
 import type { PropsWithChildren, ReactNode } from 'react';
+import Head from 'expo-router/head';
 import { ScrollView, StyleSheet, Text, type TextInputProps, View } from 'react-native';
 
 import { BrandMark } from '@/components/brand-mark';
@@ -37,6 +38,11 @@ export function AuthScreen({ eyebrow, title, description, footer, children }: Au
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={styles.pageContent}
     >
+      <Head>
+        <title>{`${title} · EntreNós`}</title>
+        <meta name="description" content={description} />
+      </Head>
+
       <View style={styles.brandRow}>
         <BrandMark compact />
         <Text selectable style={[styles.wordmark, { color: colors.text }]}>

@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import Head from 'expo-router/head';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BrandMark } from '@/components/brand-mark';
@@ -55,6 +56,11 @@ export default function DashboardScreen() {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={styles.content}
     >
+      <Head>
+        <title>Meu espaço · EntreNós</title>
+        <meta name="description" content="Sua área privada no EntreNós." />
+      </Head>
+
       <View style={styles.brandRow}>
         <BrandMark compact />
         <Text selectable style={[styles.wordmark, { color: colors.text }]}>
@@ -74,8 +80,8 @@ export default function DashboardScreen() {
           </Text>
         )}
         <Text selectable style={[styles.subtitle, { color: colors.textMuted }]}>
-          Sua identidade está confirmada. Agora cada próximo passo pode respeitar consentimento,
-          privacidade e direitos equivalentes.
+          Sua conta individual está pronta. Este é o ponto de partida para construir um espaço
+          compartilhado com consentimento, privacidade e direitos equivalentes.
         </Text>
       </View>
 
@@ -100,14 +106,14 @@ export default function DashboardScreen() {
         </AppCard>
         <AppCard style={styles.card}>
           <Text selectable style={[styles.cardKicker, { color: colors.accent }]}>
-            PRÓXIMO PASSO
+            CONEXÃO DO CASAL
           </Text>
           <Text selectable style={[styles.cardTitle, { color: colors.text }]}>
-            Formar seu espaço
+            Um vínculo que começa pelos dois
           </Text>
           <Text selectable style={[styles.cardBody, { color: colors.textMuted }]}>
-            O convite do parceiro será uma etapa separada e dependerá da concordância das duas
-            pessoas.
+            O convite e o aceite serão liberados em uma etapa própria. Até lá, nenhuma informação da
+            sua conta é compartilhada com outra pessoa.
           </Text>
         </AppCard>
       </View>
@@ -117,7 +123,11 @@ export default function DashboardScreen() {
           {user?.email}
         </Text>
         <View style={styles.accountActions}>
-          <AppButton label="Explorar protótipo" onPress={() => router.push('/prototype')} />
+          <AppButton
+            label="Conhecer os princípios"
+            variant="ghost"
+            onPress={() => router.push('/principles')}
+          />
           <AppButton
             label="Sair com segurança"
             variant="secondary"

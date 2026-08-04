@@ -14,9 +14,15 @@ export function FeatureCard({ symbol, title, description }: FeatureCardProps) {
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <Text style={[styles.symbol, { color: colors.accent }]}>{symbol}</Text>
-      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
-      <Text style={[styles.description, { color: colors.textMuted }]}>{description}</Text>
+      <Text selectable style={[styles.symbol, { color: colors.accent }]}>
+        {symbol}
+      </Text>
+      <Text selectable style={[styles.title, { color: colors.text }]}>
+        {title}
+      </Text>
+      <Text selectable style={[styles.description, { color: colors.textMuted }]}>
+        {description}
+      </Text>
     </View>
   );
 }

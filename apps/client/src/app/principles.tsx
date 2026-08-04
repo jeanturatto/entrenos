@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import Head from 'expo-router/head';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { BrandMark } from '@/components/brand-mark';
@@ -36,6 +37,14 @@ export default function PrinciplesScreen() {
 
   return (
     <ScreenShell width="reading">
+      <Head>
+        <title>Princípios · EntreNós</title>
+        <meta
+          name="description"
+          content="Privacidade, consentimento, igualdade e transparência orientam o EntreNós."
+        />
+      </Head>
+
       <View style={styles.header}>
         <AppButton
           label="Voltar"

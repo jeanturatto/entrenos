@@ -25,6 +25,7 @@
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
     "build:web": "pnpm --filter @entrenos/client export:web",
     "build:mobile": "pnpm --filter @entrenos/client export:mobile",
+    "deploy:web:production": "pnpm --filter @entrenos/client deploy:web:production",
     "doctor": "expo-doctor apps/client",
     "db:lint": "supabase db lint --local --level warning",
     "db:test": "supabase test db",

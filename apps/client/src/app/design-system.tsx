@@ -1,8 +1,9 @@
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import { BrandMark } from '@/components/brand-mark';
+import { isStudioMode } from '@/constants/app-mode';
 import { layout, radii, spacing, typography, type AppPalette } from '@/constants/theme';
 import { AppButton } from '@/design-system/app-button';
 import { AppCard } from '@/design-system/app-card';
@@ -57,7 +58,15 @@ const feedbackCopy: Record<FeedbackTone, { title: string; description: string }>
   },
 };
 
-export default function DesignSystemScreen() {
+export default function DesignSystemRoute() {
+  if (!isStudioMode) {
+    return <Redirect href="/" />;
+  }
+
+  return <DesignSystemScreen />;
+}
+
+function DesignSystemScreen() {
   const { colors, resolvedTheme } = useAppTheme();
   const { width } = useWindowDimensions();
   const [name, setName] = useState('');

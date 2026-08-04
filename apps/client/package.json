@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "export:web": "expo export --platform web --output-dir dist/web",
-    "export:mobile": "expo export --platform android --platform ios --output-dir dist/mobile"
+    "export:mobile": "expo export --platform android --platform ios --output-dir dist/mobile",
+    "deploy:web:production": "pnpm export:web && npx eas-cli@latest deploy --prod --environment production --export-dir dist/web --non-interactive"
   },
   "dependencies": {
     "@entrenos/domain": "workspace:*",

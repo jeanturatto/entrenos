@@ -1,7 +1,8 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import { BrandMark } from '@/components/brand-mark';
+import { isStudioMode } from '@/constants/app-mode';
 import { layout, radii, spacing, typography } from '@/constants/theme';
 import { AppButton } from '@/design-system/app-button';
 import { AppCard } from '@/design-system/app-card';
@@ -19,7 +20,15 @@ const areas: readonly { value: PrototypeArea; label: string; shortLabel: string 
   { value: 'nos', label: 'Espaço do casal', shortLabel: 'Nós' },
 ];
 
-export default function PrototypeScreen() {
+export default function PrototypeRoute() {
+  if (!isStudioMode) {
+    return <Redirect href="/" />;
+  }
+
+  return <PrototypeScreen />;
+}
+
+function PrototypeScreen() {
   const { colors } = useAppTheme();
   const { width } = useWindowDimensions();
   const params = useLocalSearchParams<{ area?: string }>();

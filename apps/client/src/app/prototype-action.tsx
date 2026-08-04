@@ -1,7 +1,8 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { isStudioMode } from '@/constants/app-mode';
 import { spacing, typography } from '@/constants/theme';
 import { AppButton } from '@/design-system/app-button';
 import { AppCard } from '@/design-system/app-card';
@@ -89,7 +90,15 @@ const actionConfigs: Record<string, ActionConfig> = {
 
 const defaultConfig = actionConfigs.confirmation!;
 
-export default function PrototypeActionScreen() {
+export default function PrototypeActionRoute() {
+  if (!isStudioMode) {
+    return <Redirect href="/" />;
+  }
+
+  return <PrototypeActionScreen />;
+}
+
+function PrototypeActionScreen() {
   const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ kind?: string }>();
   const config = actionConfigs[typeof params.kind === 'string' ? params.kind : ''] ?? defaultConfig;
