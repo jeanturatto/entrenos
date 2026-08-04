@@ -16,6 +16,10 @@ export default function ProtectedLayout() {
       }}
     >
       <Stack.Screen name="dashboard" options={{ title: 'Seu espaço', headerBackVisible: false }} />
+      <Stack.Screen name="space" options={{ title: 'Espaço do casal' }} />
+      <Stack.Screen name="calendar" options={{ title: 'Agenda' }} />
+      <Stack.Screen name="event-new" options={{ title: 'Novo compromisso' }} />
+      <Stack.Screen name="organize" options={{ title: 'Tarefas e compras' }} />
       <Stack.Screen name="update-password" options={{ title: 'Nova senha' }} />
     </Stack>
   );
