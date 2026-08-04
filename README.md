@@ -186,7 +186,7 @@ Preencha somente as variáveis públicas do projeto de desenvolvimento:
 
 ```dotenv
 EXPO_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=sua-chave-publicavel
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sua-chave-publicavel
 ```
 
 > [!CAUTION]
