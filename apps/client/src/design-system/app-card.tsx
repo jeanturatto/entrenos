@@ -19,14 +19,24 @@ export function AppCard({ children, tone = 'default', style }: AppCardProps) {
         : colors.surface;
   const borderColor = tone === 'accent' ? `${colors.brand}55` : colors.border;
 
-  return <View style={[styles.card, { backgroundColor, borderColor }, style]}>{children}</View>;
+  return (
+    <View
+      style={[
+        styles.card,
+        { backgroundColor, borderColor, boxShadow: '0 1px 3px rgba(16, 24, 40, 0.05)' },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   card: {
     padding: spacing.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: radii.lg,
+    borderRadius: radii.md,
     borderCurve: 'continuous',
     gap: spacing.md,
   },

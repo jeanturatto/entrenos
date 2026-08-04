@@ -2,13 +2,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import Head from 'expo-router/head';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { maxContentWidth, spacing, typography } from '@/constants/theme';
+import { radii, spacing } from '@/constants/theme';
 import { AppButton } from '@/design-system/app-button';
 import { AppCard } from '@/design-system/app-card';
 import { AppField } from '@/design-system/app-field';
+import { AppScaffold } from '@/design-system/app-scaffold';
 import { InlineNotice } from '@/design-system/inline-notice';
+import { PageHeader } from '@/design-system/page-header';
 import { useAppTheme } from '@/design-system/theme-provider';
 import {
   createSharedItem,
@@ -25,11 +27,106 @@ import { formatDateTime, parseLocalDateTime } from '@/features/core/date-time';
 import { useAuth } from '@/providers/auth-provider';
 
 const recurrenceLabels: Record<SharedRecurrence, string> = {
-  none: 'Sem repetir',
-  daily: 'Todo dia',
-  weekly: 'Toda semana',
-  monthly: 'Todo mês',
+  none: 'Não repetir',
+  daily: 'Diariamente',
+  weekly: 'Semanalmente',
+  monthly: 'Mensalmente',
 };
+
+function ListItemRow({
+  item,
+  busy,
+  onToggle,
+  onDelete,
+}: {
+  item: SharedItem;
+  busy: boolean;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  const { colors } = useAppTheme();
+  const completed = item.status === 'completed';
+  return (
+    <View style={[styles.itemRow, { borderColor: colors.border }]}>
+      <Pressable
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: completed, disabled: busy }}
+        disabled={busy}
+        onPress={onToggle}
+        style={({ pressed }) => [
+          styles.checkbox,
+          {
+            backgroundColor: completed ? colors.success : 'transparent',
+            borderColor: completed ? colors.success : colors.border,
+            opacity: pressed ? 0.65 : 1,
+          },
+        ]}
+      >
+        {completed ? <Text style={[styles.checkmark, { color: colors.onBrand }]}>✓</Text> : null}
+      </Pressable>
+      <View style={styles.itemCopy}>
+        <View style={styles.itemTitleRow}>
+          <Text
+            selectable
+            style={[
+              styles.itemTitle,
+              {
+                color: completed ? colors.textMuted : colors.text,
+                textDecorationLine: completed ? 'line-through' : 'none',
+              },
+            ]}
+          >
+            {item.item_title}
+          </Text>
+          {item.quantity ? (
+            <Text
+              style={[
+                styles.quantity,
+                { backgroundColor: colors.surfaceMuted, color: colors.text },
+              ]}
+            >
+              {' '}
+              {item.quantity}
+            </Text>
+          ) : null}
+        </View>
+        {item.item_notes ? (
+          <Text
+            selectable
+            numberOfLines={2}
+            style={[styles.itemNotes, { color: colors.textMuted }]}
+          >
+            {item.item_notes}
+          </Text>
+        ) : null}
+        <View style={styles.metaRow}>
+          <Text style={[styles.meta, { color: colors.textMuted }]}>
+            {item.assigned_name ? `Responsável: ${item.assigned_name}` : 'Qualquer um'}
+          </Text>
+          {item.due_at ? (
+            <Text style={[styles.meta, { color: colors.textMuted }]}>
+              Até {formatDateTime(item.due_at)}
+            </Text>
+          ) : null}
+          {item.recurrence !== 'none' ? (
+            <Text style={[styles.meta, { color: colors.textMuted }]}>
+              {recurrenceLabels[item.recurrence]}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Excluir ${item.item_title}`}
+        disabled={busy}
+        onPress={onDelete}
+        style={({ pressed }) => [styles.deleteButton, { opacity: pressed ? 0.55 : 1 }]}
+      >
+        <Text style={[styles.deleteText, { color: colors.error }]}>Excluir</Text>
+      </Pressable>
+    </View>
+  );
+}
 
 export default function OrganizeScreen() {
   const { colors } = useAppTheme();
@@ -87,7 +184,17 @@ export default function OrganizeScreen() {
   });
   const activeError =
     itemsQuery.error ?? createMutation.error ?? toggleMutation.error ?? deleteMutation.error;
-  const visibleItems = itemsQuery.data?.filter((item) => item.list_kind === kind) ?? [];
+  const allItems = itemsQuery.data ?? [];
+  const visibleItems = allItems.filter((item) => item.list_kind === kind);
+  const openItems = visibleItems.filter((item) => item.status === 'open');
+  const completedItems = visibleItems.filter((item) => item.status === 'completed');
+  const taskCount = allItems.filter(
+    (item) => item.list_kind === 'tasks' && item.status === 'open',
+  ).length;
+  const shoppingCount = allItems.filter(
+    (item) => item.list_kind === 'shopping' && item.status === 'open',
+  ).length;
+  const mutationBusy = toggleMutation.isPending || deleteMutation.isPending;
 
   const submit = () => {
     setValidationError(null);
@@ -102,42 +209,89 @@ export default function OrganizeScreen() {
   };
 
   return (
-    <ScrollView
-      style={{ backgroundColor: colors.background }}
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={styles.content}
-    >
+    <AppScaffold active="organize">
       <Head>
-        <title>Tarefas e compras · EntreNós</title>
+        <title>Organização · EntreNós</title>
       </Head>
-      <View style={styles.header}>
-        <Text selectable style={[styles.kicker, { color: colors.accent }]}>
-          ORGANIZAÇÃO COMPARTILHADA
-        </Text>
-        <Text selectable style={[styles.title, { color: colors.text }]}>
-          Tarefas e compras
-        </Text>
-        <Text selectable style={[styles.subtitle, { color: colors.textMuted }]}>
-          As duas contas veem a mesma lista. A tela atualiza automaticamente e bloqueia alterações
-          feitas sobre uma versão antiga.
-        </Text>
-      </View>
+      <PageHeader
+        eyebrow="Rotina compartilhada"
+        title="Tarefas e compras"
+        subtitle="Distribuam responsabilidades e mantenham a lista do mercado sempre atualizada nas duas contas."
+        action={
+          <AppButton
+            label="Atualizar"
+            variant="secondary"
+            disabled={!spaceQuery.data}
+            onPress={() => void itemsQuery.refetch()}
+          />
+        }
+      />
 
-      <View accessibilityRole="tablist" style={styles.tabs}>
-        <AppButton
-          label="Tarefas"
+      <View
+        accessibilityRole="tablist"
+        style={[styles.tabs, { backgroundColor: colors.surfaceMuted }]}
+      >
+        <Pressable
           accessibilityRole="tab"
-          selected={kind === 'tasks'}
-          variant={kind === 'tasks' ? 'primary' : 'secondary'}
+          accessibilityState={{ selected: kind === 'tasks' }}
           onPress={() => setKind('tasks')}
-        />
-        <AppButton
-          label="Compras"
+          style={[
+            styles.tab,
+            kind === 'tasks'
+              ? { backgroundColor: colors.surface, boxShadow: '0 1px 3px rgba(16, 24, 40, 0.08)' }
+              : null,
+          ]}
+        >
+          {' '}
+          <Text
+            style={[styles.tabLabel, { color: kind === 'tasks' ? colors.brand : colors.textMuted }]}
+          >
+            Tarefas
+          </Text>
+          <Text
+            style={[
+              styles.tabCount,
+              {
+                backgroundColor: kind === 'tasks' ? `${colors.brand}15` : colors.border,
+                color: kind === 'tasks' ? colors.brand : colors.textMuted,
+              },
+            ]}
+          >
+            {taskCount}
+          </Text>
+        </Pressable>
+        <Pressable
           accessibilityRole="tab"
-          selected={kind === 'shopping'}
-          variant={kind === 'shopping' ? 'primary' : 'secondary'}
+          accessibilityState={{ selected: kind === 'shopping' }}
           onPress={() => setKind('shopping')}
-        />
+          style={[
+            styles.tab,
+            kind === 'shopping'
+              ? { backgroundColor: colors.surface, boxShadow: '0 1px 3px rgba(16, 24, 40, 0.08)' }
+              : null,
+          ]}
+        >
+          {' '}
+          <Text
+            style={[
+              styles.tabLabel,
+              { color: kind === 'shopping' ? colors.brand : colors.textMuted },
+            ]}
+          >
+            Compras
+          </Text>
+          <Text
+            style={[
+              styles.tabCount,
+              {
+                backgroundColor: kind === 'shopping' ? `${colors.brand}15` : colors.border,
+                color: kind === 'shopping' ? colors.brand : colors.textMuted,
+              },
+            ]}
+          >
+            {shoppingCount}
+          </Text>
+        </Pressable>
       </View>
 
       {validationError ? <InlineNotice tone="warning">{validationError}</InlineNotice> : null}
@@ -146,212 +300,264 @@ export default function OrganizeScreen() {
       ) : null}
       {!spaceQuery.data && !spaceQuery.isPending ? (
         <AppCard tone="accent">
-          <Text selectable style={[styles.cardTitle, { color: colors.text }]}>
-            Conecte o casal primeiro
+          <Text selectable style={[styles.panelTitle, { color: colors.text }]}>
+            Conecte as duas contas primeiro
+          </Text>
+          <Text style={[styles.panelBody, { color: colors.textMuted }]}>
+            As listas precisam de um espaço do casal para sincronizar.
           </Text>
           <AppButton label="Ir para conexão" onPress={() => router.push('/space')} />
         </AppCard>
       ) : null}
 
       {spaceQuery.data ? (
-        <AppCard tone="accent">
-          <Text selectable style={[styles.cardTitle, { color: colors.text }]}>
-            {kind === 'tasks' ? 'Nova tarefa' : 'Adicionar à compra'}
-          </Text>
-          <AppField
-            label={kind === 'tasks' ? 'O que precisa ser feito?' : 'Qual produto?'}
-            value={title}
-            maxLength={160}
-            onChangeText={setTitle}
-          />
-          {kind === 'shopping' ? (
-            <AppField
-              label="Quantidade (opcional)"
-              value={quantity}
-              maxLength={80}
-              onChangeText={setQuantity}
-              placeholder="Ex.: 2 unidades, 1 kg"
-            />
-          ) : null}
-          <AppField
-            label="Observações (opcional)"
-            value={notes}
-            multiline
-            maxLength={2000}
-            onChangeText={setNotes}
-          />
-          <AppField
-            label="Data limite (opcional)"
-            value={dueDate}
-            keyboardType="numbers-and-punctuation"
-            onChangeText={setDueDate}
-            hint="DD/MM/AAAA"
-          />
-
-          <View style={styles.block}>
-            <Text selectable style={[styles.label, { color: colors.text }]}>
-              Responsável
-            </Text>
-            <View style={styles.actions}>
-              <AppButton
-                label="Qualquer um"
-                variant={assignedTo === null ? 'primary' : 'secondary'}
-                selected={assignedTo === null}
-                onPress={() => setAssignedTo(null)}
-              />
-              {spaceQuery.data.members.map((member) => (
-                <AppButton
-                  key={member.userId}
-                  label={member.isMe ? 'Eu' : member.displayName}
-                  variant={assignedTo === member.userId ? 'primary' : 'secondary'}
-                  selected={assignedTo === member.userId}
-                  onPress={() => setAssignedTo(member.userId)}
-                />
-              ))}
+        <View style={styles.workspace}>
+          <AppCard style={styles.listPanel}>
+            <View style={styles.listHeading}>
+              <View>
+                <Text selectable style={[styles.panelTitle, { color: colors.text }]}>
+                  {kind === 'tasks' ? 'Responsabilidades' : 'Lista do mercado'}
+                </Text>
+                <Text style={[styles.panelBody, { color: colors.textMuted }]}>
+                  {openItems.length} pendente{openItems.length === 1 ? '' : 's'} ·{' '}
+                  {completedItems.length} concluído{completedItems.length === 1 ? '' : 's'}
+                </Text>
+              </View>
             </View>
-          </View>
+            {itemsQuery.isPending ? (
+              <View style={styles.loading}>
+                <ActivityIndicator color={colors.brand} />
+                <Text style={{ color: colors.textMuted }}>Sincronizando lista…</Text>
+              </View>
+            ) : null}
+            {!itemsQuery.isPending && visibleItems.length === 0 ? (
+              <View style={styles.empty}>
+                <View style={[styles.emptyIcon, { backgroundColor: `${colors.brand}12` }]}>
+                  <Text style={[styles.emptyGlyph, { color: colors.brand }]}>
+                    {kind === 'tasks' ? '✓' : '▣'}
+                  </Text>
+                </View>
+                <Text style={[styles.emptyTitle, { color: colors.text }]}>Lista vazia</Text>
+                <Text style={[styles.panelBody, { color: colors.textMuted }]}>
+                  Adicione o primeiro item no painel ao lado.
+                </Text>
+              </View>
+            ) : null}
+            {openItems.map((item) => (
+              <ListItemRow
+                key={item.item_id}
+                item={item}
+                busy={mutationBusy}
+                onToggle={() => toggleMutation.mutate({ item, completed: true })}
+                onDelete={() => deleteMutation.mutate(item)}
+              />
+            ))}
+            {completedItems.length > 0 ? (
+              <View style={styles.completedHeading}>
+                <Text style={[styles.completedLabel, { color: colors.textMuted }]}>
+                  CONCLUÍDOS ({completedItems.length})
+                </Text>
+              </View>
+            ) : null}
+            {completedItems.map((item) => (
+              <ListItemRow
+                key={item.item_id}
+                item={item}
+                busy={mutationBusy}
+                onToggle={() => toggleMutation.mutate({ item, completed: false })}
+                onDelete={() => deleteMutation.mutate(item)}
+              />
+            ))}
+          </AppCard>
 
-          {kind === 'tasks' ? (
-            <View style={styles.block}>
-              <Text selectable style={[styles.label, { color: colors.text }]}>
-                Repetição
+          <AppCard tone="accent" style={styles.formPanel}>
+            <View>
+              <Text selectable style={[styles.panelTitle, { color: colors.text }]}>
+                {kind === 'tasks' ? 'Nova tarefa' : 'Adicionar produto'}
               </Text>
-              <View style={styles.actions}>
-                {(Object.keys(recurrenceLabels) as SharedRecurrence[]).map((option) => (
+              <Text style={[styles.panelBody, { color: colors.textMuted }]}>
+                {kind === 'tasks'
+                  ? 'Defina quem fará e quando.'
+                  : 'O item aparece imediatamente para o casal.'}
+              </Text>
+            </View>
+            <AppField
+              label={kind === 'tasks' ? 'O que precisa ser feito?' : 'Qual produto?'}
+              value={title}
+              maxLength={160}
+              onChangeText={setTitle}
+              placeholder={kind === 'tasks' ? 'Ex.: Agendar revisão do carro' : 'Ex.: Café em pó'}
+            />
+            {kind === 'shopping' ? (
+              <AppField
+                label="Quantidade"
+                value={quantity}
+                maxLength={80}
+                onChangeText={setQuantity}
+                placeholder="Ex.: 2 unidades, 1 kg"
+              />
+            ) : null}
+            <AppField
+              label="Observações"
+              value={notes}
+              multiline
+              maxLength={2000}
+              onChangeText={setNotes}
+              placeholder="Detalhes opcionais"
+            />
+            <AppField
+              label="Data limite"
+              value={dueDate}
+              keyboardType="numbers-and-punctuation"
+              onChangeText={setDueDate}
+              hint="DD/MM/AAAA · opcional"
+            />
+
+            <View style={styles.formBlock}>
+              <Text selectable style={[styles.formLabel, { color: colors.text }]}>
+                Responsável
+              </Text>
+              <View style={styles.chips}>
+                <AppButton
+                  label="Qualquer um"
+                  variant={assignedTo === null ? 'primary' : 'secondary'}
+                  selected={assignedTo === null}
+                  onPress={() => setAssignedTo(null)}
+                />
+                {spaceQuery.data.members.map((member) => (
                   <AppButton
-                    key={option}
-                    label={recurrenceLabels[option]}
-                    variant={recurrence === option ? 'primary' : 'secondary'}
-                    selected={recurrence === option}
-                    onPress={() => setRecurrence(option)}
+                    key={member.userId}
+                    label={member.isMe ? 'Eu' : member.displayName}
+                    variant={assignedTo === member.userId ? 'primary' : 'secondary'}
+                    selected={assignedTo === member.userId}
+                    onPress={() => setAssignedTo(member.userId)}
                   />
                 ))}
               </View>
             </View>
-          ) : null}
-          <AppButton
-            label={kind === 'tasks' ? 'Adicionar tarefa' : 'Adicionar produto'}
-            pending={createMutation.isPending}
-            onPress={submit}
-          />
-        </AppCard>
-      ) : null}
-
-      <View style={styles.list}>
-        {visibleItems.length === 0 && spaceQuery.data && !itemsQuery.isPending ? (
-          <AppCard>
-            <Text selectable style={[styles.cardTitle, { color: colors.text }]}>
-              Lista vazia
-            </Text>
-            <Text selectable style={[styles.body, { color: colors.textMuted }]}>
-              Adicione o primeiro item acima.
-            </Text>
+            {kind === 'tasks' ? (
+              <View style={styles.formBlock}>
+                <Text selectable style={[styles.formLabel, { color: colors.text }]}>
+                  Repetição
+                </Text>
+                <View style={styles.chips}>
+                  {(Object.keys(recurrenceLabels) as SharedRecurrence[]).map((option) => (
+                    <AppButton
+                      key={option}
+                      label={recurrenceLabels[option]}
+                      variant={recurrence === option ? 'primary' : 'secondary'}
+                      selected={recurrence === option}
+                      onPress={() => setRecurrence(option)}
+                    />
+                  ))}
+                </View>
+              </View>
+            ) : null}
+            <AppButton
+              fullWidth
+              label={kind === 'tasks' ? 'Adicionar tarefa' : 'Adicionar produto'}
+              pending={createMutation.isPending}
+              onPress={submit}
+            />
           </AppCard>
-        ) : null}
-        {visibleItems.map((item) => {
-          const completed = item.status === 'completed';
-          return (
-            <AppCard key={item.item_id} tone={completed ? 'muted' : 'default'}>
-              <View style={styles.itemHeader}>
-                <Text
-                  selectable
-                  style={[
-                    styles.itemTitle,
-                    {
-                      color: completed ? colors.textMuted : colors.text,
-                      textDecorationLine: completed ? 'line-through' : 'none',
-                    },
-                  ]}
-                >
-                  {item.item_title}
-                </Text>
-                <Text
-                  selectable
-                  style={[styles.badge, { color: completed ? colors.success : colors.warning }]}
-                >
-                  {completed ? 'CONCLUÍDO' : 'PENDENTE'}
-                </Text>
-              </View>
-              {item.quantity ? (
-                <Text selectable style={[styles.body, { color: colors.text }]}>
-                  Quantidade: {item.quantity}
-                </Text>
-              ) : null}
-              {item.item_notes ? (
-                <Text selectable style={[styles.body, { color: colors.textMuted }]}>
-                  {item.item_notes}
-                </Text>
-              ) : null}
-              <Text selectable style={[styles.meta, { color: colors.textMuted }]}>
-                {item.assigned_name
-                  ? `Responsável: ${item.assigned_name}`
-                  : 'Qualquer um pode fazer'}
-                {item.due_at ? ` · até ${formatDateTime(item.due_at)}` : ''}
-                {item.recurrence !== 'none' ? ` · ${recurrenceLabels[item.recurrence]}` : ''}
-              </Text>
-              <View style={styles.actions}>
-                <AppButton
-                  label={completed ? 'Reabrir' : 'Concluir'}
-                  variant={completed ? 'secondary' : 'primary'}
-                  pending={toggleMutation.isPending}
-                  onPress={() => toggleMutation.mutate({ item, completed: !completed })}
-                />
-                <AppButton
-                  label="Excluir"
-                  variant="danger"
-                  disabled={deleteMutation.isPending}
-                  onPress={() => deleteMutation.mutate(item)}
-                />
-              </View>
-            </AppCard>
-          );
-        })}
-      </View>
-      <AppButton
-        label="Atualizar listas"
-        variant="ghost"
-        disabled={!spaceQuery.data}
-        onPress={() => void itemsQuery.refetch()}
-      />
-    </ScrollView>
+        </View>
+      ) : null}
+    </AppScaffold>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    alignSelf: 'center',
-    width: '100%',
-    maxWidth: maxContentWidth,
-    padding: spacing.lg,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.lg,
-  },
-  header: { gap: spacing.sm },
-  kicker: { fontSize: 12, fontWeight: '800', letterSpacing: 1.3 },
-  title: { fontFamily: typography.display, fontSize: 34, lineHeight: 40, fontWeight: '700' },
-  subtitle: { maxWidth: 640, fontSize: 16, lineHeight: 25 },
-  tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  cardTitle: { fontFamily: typography.display, fontSize: 22, fontWeight: '700' },
-  itemTitle: {
-    flexGrow: 1,
-    flexBasis: 220,
-    fontFamily: typography.display,
-    fontSize: 20,
-    lineHeight: 26,
-    fontWeight: '700',
-  },
-  itemHeader: {
+  tabs: {
+    alignSelf: 'flex-start',
+    padding: 4,
+    borderRadius: radii.md,
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    gap: 4,
+  },
+  tab: {
+    minHeight: 42,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.sm,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: spacing.sm,
   },
-  badge: { fontSize: 11, fontWeight: '900', letterSpacing: 0.8 },
-  body: { fontSize: 14, lineHeight: 21 },
-  meta: { fontSize: 12, lineHeight: 18 },
-  block: { gap: spacing.sm },
-  label: { fontSize: 14, lineHeight: 21, fontWeight: '700' },
-  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  list: { gap: spacing.md },
+  tabLabel: { fontSize: 13, fontWeight: '800' },
+  tabCount: {
+    minWidth: 23,
+    height: 23,
+    borderRadius: 12,
+    paddingHorizontal: 6,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    fontSize: 11,
+    lineHeight: 23,
+    fontWeight: '900',
+    fontVariant: ['tabular-nums'],
+  },
+  workspace: {
+    flexDirection: 'row',
+    flexWrap: 'wrap-reverse',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+  },
+  listPanel: { flexGrow: 2, flexBasis: 580, minWidth: 290 },
+  formPanel: { flexGrow: 1, flexBasis: 340, minWidth: 290 },
+  listHeading: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  panelTitle: { fontSize: 19, lineHeight: 25, fontWeight: '800' },
+  panelBody: { fontSize: 12, lineHeight: 18, marginTop: 3 },
+  itemRow: {
+    minHeight: 76,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingVertical: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 7,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkmark: { fontSize: 14, lineHeight: 17, fontWeight: '900' },
+  itemCopy: { flex: 1, minWidth: 0, gap: 3 },
+  itemTitleRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
+  itemTitle: { flexShrink: 1, fontSize: 14, lineHeight: 20, fontWeight: '800' },
+  quantity: {
+    borderRadius: radii.xs,
+    overflow: 'hidden',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  itemNotes: { fontSize: 12, lineHeight: 18 },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  meta: { fontSize: 10, lineHeight: 16, fontWeight: '600' },
+  deleteButton: { minHeight: 34, paddingHorizontal: spacing.sm, justifyContent: 'center' },
+  deleteText: { fontSize: 11, fontWeight: '800' },
+  completedHeading: { paddingTop: spacing.md },
+  completedLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 0.8 },
+  formBlock: { gap: spacing.sm },
+  formLabel: { fontSize: 12, lineHeight: 18, fontWeight: '800' },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  loading: { minHeight: 180, alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
+  empty: { minHeight: 260, alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
+  emptyIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyGlyph: { fontSize: 24, fontWeight: '900' },
+  emptyTitle: { fontSize: 17, fontWeight: '800' },
 });

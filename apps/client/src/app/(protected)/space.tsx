@@ -1,13 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Head from 'expo-router/head';
 import { useState } from 'react';
-import { ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Share, StyleSheet, Text, View } from 'react-native';
 
-import { maxContentWidth, spacing, typography } from '@/constants/theme';
+import { spacing } from '@/constants/theme';
 import { AppButton } from '@/design-system/app-button';
 import { AppCard } from '@/design-system/app-card';
 import { AppField } from '@/design-system/app-field';
+import { AppScaffold } from '@/design-system/app-scaffold';
 import { InlineNotice } from '@/design-system/inline-notice';
+import { PageHeader } from '@/design-system/page-header';
 import { useAppTheme } from '@/design-system/theme-provider';
 import {
   cancelInvitation,
@@ -76,27 +78,24 @@ export default function SpaceScreen() {
   const canInvite = Boolean(space && space.members.length < 2);
 
   return (
-    <ScrollView
-      style={{ backgroundColor: colors.background }}
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={styles.content}
-    >
+    <AppScaffold active="space">
       <Head>
         <title>Espaço do casal · EntreNós</title>
       </Head>
-      <View style={styles.intro}>
-        <Text selectable style={[styles.kicker, { color: colors.accent }]}>
-          VÍNCULO DO CASAL
-        </Text>
-        <Text selectable style={[styles.title, { color: colors.text }]}>
-          {space ? space.name : 'Conectem as duas contas'}
-        </Text>
-        <Text selectable style={[styles.subtitle, { color: colors.textMuted }]}>
-          {space
+      <PageHeader
+        eyebrow="Vínculo do casal"
+        title={space ? space.name : 'Conectem as duas contas'}
+        subtitle={
+          space
             ? 'Somente as duas pessoas abaixo podem acessar o conteúdo compartilhado.'
-            : 'Uma pessoa cria o espaço. A outra usa o código recebido para entrar.'}
-        </Text>
-      </View>
+            : 'Uma pessoa cria o espaço. A outra usa o código recebido para entrar.'
+        }
+        action={
+          space ? (
+            <AppButton label="Atualizar" variant="secondary" onPress={() => void refreshSpace()} />
+          ) : undefined
+        }
+      />
 
       {success ? <InlineNotice tone="success">{success}</InlineNotice> : null}
       {activeError ? (
@@ -231,26 +230,14 @@ export default function SpaceScreen() {
           )}
         </>
       ) : null}
-    </ScrollView>
+    </AppScaffold>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    alignSelf: 'center',
-    width: '100%',
-    maxWidth: maxContentWidth,
-    padding: spacing.lg,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.lg,
-  },
-  intro: { gap: spacing.sm, marginBottom: spacing.sm },
-  kicker: { fontSize: 12, fontWeight: '800', letterSpacing: 1.3 },
-  title: { fontFamily: typography.display, fontSize: 34, lineHeight: 40, fontWeight: '700' },
-  subtitle: { fontSize: 16, lineHeight: 25 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   card: { minWidth: 270, flexGrow: 1, flexBasis: 300, alignSelf: 'flex-start' },
-  cardTitle: { fontFamily: typography.display, fontSize: 22, fontWeight: '700' },
+  cardTitle: { fontSize: 20, lineHeight: 26, fontWeight: '800' },
   body: { fontSize: 14, lineHeight: 21 },
   member: {
     flexDirection: 'row',
@@ -269,7 +256,6 @@ const styles = StyleSheet.create({
   memberName: { fontSize: 16, fontWeight: '700' },
   codeBox: { gap: spacing.md, alignItems: 'flex-start' },
   code: {
-    fontFamily: typography.display,
     fontSize: 40,
     lineHeight: 46,
     fontWeight: '800',

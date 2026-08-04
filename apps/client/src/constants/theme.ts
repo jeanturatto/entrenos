@@ -17,15 +17,15 @@ export const spacing = {
 
 export const radii = {
   xs: 6,
-  sm: 10,
-  md: 16,
-  lg: 24,
-  xl: 32,
+  sm: 9,
+  md: 12,
+  lg: 16,
+  xl: 22,
   pill: 999,
 } as const;
 
 export const typography = {
-  display: Platform.select({ ios: 'Georgia', android: 'serif', web: 'Georgia' }),
+  display: Platform.select({ ios: 'System', android: 'sans-serif', web: 'system-ui' }),
   body: Platform.select({ ios: 'System', android: 'sans-serif', web: 'system-ui' }),
   size: {
     caption: 12,
@@ -46,7 +46,7 @@ export const typography = {
 } as const;
 
 export const layout = {
-  maxContentWidth: 1120,
+  maxContentWidth: 1440,
   maxReadingWidth: 680,
   minTouchTarget: 48,
   compactBreakpoint: 640,
@@ -59,4 +59,4 @@ export const motion = {
   slow: 360,
 } as const;
 
-export const maxContentWidth = layout.maxReadingWidth;
+export const maxContentWidth = layout.maxContentWidth;

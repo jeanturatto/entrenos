@@ -3,7 +3,7 @@
     "name": "EntreNós",
     "slug": "entrenos",
     "owner": "entrenos2",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "entrenos",

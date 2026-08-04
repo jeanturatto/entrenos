@@ -8,6 +8,7 @@ export default function ProtectedLayout() {
   return (
     <Stack
       screenOptions={{
+        headerShown: false,
         headerShadowVisible: false,
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.text,
@@ -20,7 +21,7 @@ export default function ProtectedLayout() {
       <Stack.Screen name="calendar" options={{ title: 'Agenda' }} />
       <Stack.Screen name="event-new" options={{ title: 'Novo compromisso' }} />
       <Stack.Screen name="organize" options={{ title: 'Tarefas e compras' }} />
-      <Stack.Screen name="update-password" options={{ title: 'Nova senha' }} />
+      <Stack.Screen name="update-password" options={{ title: 'Nova senha', headerShown: true }} />
     </Stack>
   );
 }
