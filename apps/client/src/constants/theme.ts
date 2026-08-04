@@ -12,6 +12,7 @@ export const palette = {
     brandStrong: '#473a65',
     accent: '#ba684f',
     success: '#2f745f',
+    error: '#9b3a33',
     onBrand: '#ffffff',
   },
   dark: {
@@ -25,6 +26,7 @@ export const palette = {
     brandStrong: '#d1c1ef',
     accent: '#e6957c',
     success: '#78bda6',
+    error: '#ffb4ab',
     onBrand: '#21182d',
   },
 } as const;

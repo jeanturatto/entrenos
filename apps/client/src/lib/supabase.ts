@@ -2,6 +2,7 @@ import 'react-native-url-polyfill/auto';
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
+import { authStorage } from '@/lib/auth-storage';
 import { requirePublicEnvironment } from '@/lib/env';
 
 let client: SupabaseClient | undefined;
@@ -9,10 +10,11 @@ let client: SupabaseClient | undefined;
 export function getSupabaseClient() {
   if (!client) {
     const environment = requirePublicEnvironment();
-    client = createClient(environment.supabaseUrl, environment.supabaseAnonKey, {
+    client = createClient(environment.supabaseUrl, environment.supabasePublishableKey, {
       auth: {
-        persistSession: false,
-        autoRefreshToken: false,
+        storage: authStorage,
+        persistSession: true,
+        autoRefreshToken: true,
         detectSessionInUrl: false,
       },
     });

@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const publicEnvironmentSchema = z.object({
   supabaseUrl: z.url(),
-  supabaseAnonKey: z
+  supabasePublishableKey: z
     .string()
     .min(20)
     .refine((value) => !value.startsWith('substitua-'), 'Use a chave real do ambiente'),
@@ -11,7 +11,8 @@ const publicEnvironmentSchema = z.object({
 function readPublicEnvironment() {
   return publicEnvironmentSchema.safeParse({
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
-    supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublishableKey:
+      process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
   });
 }
 

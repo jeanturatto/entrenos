@@ -1,134 +1,216 @@
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import pngjs from 'pngjs';
 
 const { PNG } = pngjs;
 const outputDirectory = resolve('apps/client/assets/images');
+const emblemPath = resolve(outputDirectory, 'brand-emblem.png');
+const lockupPath = resolve(outputDirectory, 'brand-lockup.png');
 
 const colors = {
-  brand: [93, 79, 124],
-  brandStrong: [71, 58, 101],
-  brandLight: [118, 101, 151],
-  cream: [248, 245, 240],
-  white: [255, 255, 255],
+  transparent: [0, 0, 0, 0],
+  cream: [243, 238, 231, 255],
+  white: [255, 255, 255, 255],
 };
 
-function clamp(value, minimum = 0, maximum = 1) {
-  return Math.max(minimum, Math.min(maximum, value));
+function createCanvas(width, height, color) {
+  const image = new PNG({ width, height });
+
+  for (let offset = 0; offset < image.data.length; offset += 4) {
+    image.data[offset] = color[0];
+    image.data[offset + 1] = color[1];
+    image.data[offset + 2] = color[2];
+    image.data[offset + 3] = color[3];
+  }
+
+  return image;
 }
 
-function mix(from, to, amount) {
-  return from.map((channel, index) => Math.round(channel + (to[index] - channel) * amount));
-}
+function cropToVisiblePixels(image, alphaThreshold = 4) {
+  let minimumX = image.width;
+  let minimumY = image.height;
+  let maximumX = -1;
+  let maximumY = -1;
 
-function ringCoverage(x, y, centerX, centerY, angle, radiusX, radiusY, thickness) {
-  const cosine = Math.cos(angle);
-  const sine = Math.sin(angle);
-  const translatedX = x - centerX;
-  const translatedY = y - centerY;
-  const rotatedX = translatedX * cosine + translatedY * sine;
-  const rotatedY = -translatedX * sine + translatedY * cosine;
-  const normalizedRadius = Math.sqrt(
-    (rotatedX * rotatedX) / (radiusX * radiusX) + (rotatedY * rotatedY) / (radiusY * radiusY),
-  );
-  const distance = Math.abs(normalizedRadius - 1) * Math.min(radiusX, radiusY);
-  return clamp((thickness / 2 + 1.25 - distance) / 2.5);
-}
+  for (let y = 0; y < image.height; y += 1) {
+    for (let x = 0; x < image.width; x += 1) {
+      const alpha = image.data[(y * image.width + x) * 4 + 3];
 
-function renderAsset({ size, background, ringColor, padding = 0 }) {
-  const image = new PNG({ width: size, height: size });
-  const scale = 1 - padding * 2;
-  const radiusX = size * 0.19 * scale;
-  const radiusY = size * 0.26 * scale;
-  const thickness = size * 0.052 * scale;
-  const leftX = size * 0.43;
-  const rightX = size * 0.57;
-  const centerY = size * 0.5;
-
-  for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
-      const offset = (y * size + x) * 4;
-      let base = [0, 0, 0];
-      let baseAlpha = 0;
-
-      if (background) {
-        const vertical = y / Math.max(size - 1, 1);
-        const horizontal = x / Math.max(size - 1, 1);
-        base = mix(background.from, background.to, clamp(vertical * 0.7 + horizontal * 0.3));
-        baseAlpha = 255;
+      if (alpha > alphaThreshold) {
+        minimumX = Math.min(minimumX, x);
+        minimumY = Math.min(minimumY, y);
+        maximumX = Math.max(maximumX, x);
+        maximumY = Math.max(maximumY, y);
       }
-
-      const leftRing = ringCoverage(
-        x,
-        y,
-        leftX,
-        centerY,
-        -Math.PI / 12,
-        radiusX,
-        radiusY,
-        thickness,
-      );
-      const rightRing = ringCoverage(
-        x,
-        y,
-        rightX,
-        centerY,
-        Math.PI / 12,
-        radiusX,
-        radiusY,
-        thickness,
-      );
-      const coverage = Math.max(leftRing, rightRing);
-
-      image.data[offset] = Math.round(base[0] * (1 - coverage) + ringColor[0] * coverage);
-      image.data[offset + 1] = Math.round(base[1] * (1 - coverage) + ringColor[1] * coverage);
-      image.data[offset + 2] = Math.round(base[2] * (1 - coverage) + ringColor[2] * coverage);
-      image.data[offset + 3] = Math.round(baseAlpha + (255 - baseAlpha) * coverage);
     }
   }
 
-  return PNG.sync.write(image, { colorType: 6 });
+  if (maximumX < minimumX || maximumY < minimumY) {
+    throw new Error('The source image does not contain visible pixels.');
+  }
+
+  const width = maximumX - minimumX + 1;
+  const height = maximumY - minimumY + 1;
+  const cropped = new PNG({ width, height });
+  PNG.bitblt(image, cropped, minimumX, minimumY, width, height, 0, 0);
+  return cropped;
 }
 
+function resizeBilinear(source, width, height) {
+  const resized = new PNG({ width, height });
+  const scaleX = source.width / width;
+  const scaleY = source.height / height;
+
+  for (let y = 0; y < height; y += 1) {
+    const sourceY = (y + 0.5) * scaleY - 0.5;
+    const y0 = Math.max(0, Math.floor(sourceY));
+    const y1 = Math.min(source.height - 1, y0 + 1);
+    const weightY = Math.max(0, sourceY - y0);
+
+    for (let x = 0; x < width; x += 1) {
+      const sourceX = (x + 0.5) * scaleX - 0.5;
+      const x0 = Math.max(0, Math.floor(sourceX));
+      const x1 = Math.min(source.width - 1, x0 + 1);
+      const weightX = Math.max(0, sourceX - x0);
+      const samples = [
+        [x0, y0, (1 - weightX) * (1 - weightY)],
+        [x1, y0, weightX * (1 - weightY)],
+        [x0, y1, (1 - weightX) * weightY],
+        [x1, y1, weightX * weightY],
+      ];
+      let alpha = 0;
+      const premultiplied = [0, 0, 0];
+
+      for (const [sampleX, sampleY, weight] of samples) {
+        const sourceOffset = (sampleY * source.width + sampleX) * 4;
+        const sampleAlpha = source.data[sourceOffset + 3] / 255;
+        alpha += sampleAlpha * weight;
+
+        for (let channel = 0; channel < 3; channel += 1) {
+          premultiplied[channel] += source.data[sourceOffset + channel] * sampleAlpha * weight;
+        }
+      }
+
+      const destinationOffset = (y * width + x) * 4;
+      for (let channel = 0; channel < 3; channel += 1) {
+        resized.data[destinationOffset + channel] =
+          alpha > 0 ? Math.round(premultiplied[channel] / alpha) : 0;
+      }
+      resized.data[destinationOffset + 3] = Math.round(alpha * 255);
+    }
+  }
+
+  return resized;
+}
+
+function recolor(image, color) {
+  for (let offset = 0; offset < image.data.length; offset += 4) {
+    image.data[offset] = color[0];
+    image.data[offset + 1] = color[1];
+    image.data[offset + 2] = color[2];
+  }
+
+  return image;
+}
+
+function composite(destination, source, originX, originY) {
+  for (let y = 0; y < source.height; y += 1) {
+    for (let x = 0; x < source.width; x += 1) {
+      const sourceOffset = (y * source.width + x) * 4;
+      const destinationOffset = ((originY + y) * destination.width + originX + x) * 4;
+      const sourceAlpha = source.data[sourceOffset + 3] / 255;
+      const destinationAlpha = destination.data[destinationOffset + 3] / 255;
+      const outputAlpha = sourceAlpha + destinationAlpha * (1 - sourceAlpha);
+
+      for (let channel = 0; channel < 3; channel += 1) {
+        const sourceColor = source.data[sourceOffset + channel];
+        const destinationColor = destination.data[destinationOffset + channel];
+        destination.data[destinationOffset + channel] =
+          outputAlpha > 0
+            ? Math.round(
+                (sourceColor * sourceAlpha +
+                  destinationColor * destinationAlpha * (1 - sourceAlpha)) /
+                  outputAlpha,
+              )
+            : 0;
+      }
+
+      destination.data[destinationOffset + 3] = Math.round(outputAlpha * 255);
+    }
+  }
+}
+
+function renderSquareAsset(source, { size, background, coverage, monochrome }) {
+  const canvas = createCanvas(size, size, background);
+  const targetSize = Math.round(size * coverage);
+  const scale = Math.min(targetSize / source.width, targetSize / source.height);
+  const width = Math.max(1, Math.round(source.width * scale));
+  const height = Math.max(1, Math.round(source.height * scale));
+  const resized = resizeBilinear(source, width, height);
+
+  if (monochrome) {
+    recolor(resized, monochrome);
+  }
+
+  composite(canvas, resized, Math.round((size - width) / 2), Math.round((size - height) / 2));
+  return canvas;
+}
+
+function normalizeLockup() {
+  const source = cropToVisiblePixels(PNG.sync.read(readFileSync(lockupPath)));
+  const horizontalPadding = Math.round(source.width * 0.04);
+  const verticalPadding = Math.round(source.height * 0.1);
+  const canvas = createCanvas(
+    source.width + horizontalPadding * 2,
+    source.height + verticalPadding * 2,
+    colors.transparent,
+  );
+  composite(canvas, source, horizontalPadding, verticalPadding);
+  writeFileSync(lockupPath, PNG.sync.write(canvas, { colorType: 6 }));
+}
+
+const emblem = cropToVisiblePixels(PNG.sync.read(readFileSync(emblemPath)));
 const assets = [
   {
     file: 'icon.png',
     size: 1024,
-    background: { from: colors.brandStrong, to: colors.brandLight },
-    ringColor: colors.cream,
+    background: colors.cream,
+    coverage: 0.78,
   },
   {
     file: 'android-icon-foreground.png',
     size: 1024,
-    background: null,
-    ringColor: colors.cream,
-    padding: 0.12,
+    background: colors.transparent,
+    coverage: 0.58,
   },
   {
     file: 'android-icon-monochrome.png',
     size: 1024,
-    background: null,
-    ringColor: colors.white,
-    padding: 0.12,
+    background: colors.transparent,
+    coverage: 0.58,
+    monochrome: colors.white,
   },
   {
     file: 'splash-icon.png',
     size: 1024,
-    background: null,
-    ringColor: colors.brand,
-    padding: 0.06,
+    background: colors.transparent,
+    coverage: 0.78,
   },
   {
     file: 'favicon.png',
     size: 128,
-    background: { from: colors.brandStrong, to: colors.brandLight },
-    ringColor: colors.cream,
+    background: colors.cream,
+    coverage: 0.82,
   },
 ];
 
 for (const asset of assets) {
   const outputPath = resolve(outputDirectory, asset.file);
-  writeFileSync(outputPath, renderAsset(asset));
+  const image = renderSquareAsset(emblem, asset);
+  writeFileSync(outputPath, PNG.sync.write(image, { colorType: 6 }));
   console.log(`Generated ${outputPath}`);
 }
+
+normalizeLockup();
+console.log(`Normalized ${lockupPath}`);

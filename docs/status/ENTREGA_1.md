@@ -1,28 +1,28 @@
 # Status da Entrega 1 — Fundação executável
 
 - **Data da revisão:** 03/08/2026
-- **Estado:** código concluído; aceite operacional pendente de autenticação nos serviços de nuvem
+- **Estado:** fundação e schema de desenvolvimento concluídos; aceite do build móvel ainda pendente
 
 ## Concluído e validado
 
-| Item                   | Evidência                                                        |
-| ---------------------- | ---------------------------------------------------------------- |
-| Monorepo pnpm          | Instalação com lockfile congelado concluída                      |
-| Cliente universal Expo | `expo-doctor`: 20/20 verificações                                |
-| Qualidade estática     | Prettier, ESLint e TypeScript sem erros                          |
-| Domínio                | 4/4 testes de privacidade aprovados                              |
-| Web                    | Export estático com `/`, `/principles`, sitemap e fallback       |
-| Android                | Bundle Hermes exportado com sucesso                              |
-| iOS                    | Bundle Hermes exportado com sucesso                              |
-| Navegação web          | Ida aos princípios e retorno testados no navegador               |
-| Responsividade         | 390×844 sem overflow horizontal; cartões com 342 px úteis        |
-| Console web            | Nenhum erro ou aviso durante a jornada testada                   |
-| Marca provisória       | Ícone, splash, adaptive icon e favicon originais e reproduzíveis |
-| Segredos               | Busca por padrões de credenciais sem ocorrências                 |
-| GitHub                 | Repositório conectado e branch `main` sincronizada               |
-| CI                     | Jobs de aplicação e banco executados com sucesso                 |
-| Supabase público       | URL e chave publicável validadas no endpoint de autenticação     |
-| Expo/EAS               | Conta, projeto, pacote Android e bundle iOS confirmados          |
+| Item                   | Evidência                                                                  |
+| ---------------------- | -------------------------------------------------------------------------- |
+| Monorepo pnpm          | Instalação com lockfile congelado concluída                                |
+| Cliente universal Expo | `expo-doctor`: 20/20 verificações                                          |
+| Qualidade estática     | Prettier, ESLint e TypeScript sem erros                                    |
+| Domínio                | 4/4 testes de privacidade aprovados                                        |
+| Web                    | Export estático com `/`, `/principles`, sitemap e fallback                 |
+| Android                | Bundle Hermes exportado com sucesso                                        |
+| iOS                    | Bundle Hermes exportado com sucesso                                        |
+| Navegação web          | Ida aos princípios e retorno testados no navegador                         |
+| Responsividade         | 390×844 sem overflow horizontal; cartões com 342 px úteis                  |
+| Console web            | Nenhum erro ou aviso durante a jornada testada                             |
+| Marca provisória       | Ícone, splash, adaptive icon e favicon originais e reproduzíveis           |
+| Segredos               | Busca por padrões de credenciais sem ocorrências                           |
+| GitHub                 | Repositório conectado e branch `main` sincronizada                         |
+| CI                     | Jobs de aplicação e banco executados com sucesso                           |
+| Supabase público       | URL, chave publicável e migrations validadas no projeto de desenvolvimento |
+| Expo/EAS               | Conta, projeto, pacote Android e bundle iOS confirmados                    |
 
 ## Banco preparado
 
@@ -34,9 +34,11 @@
 - Criação transacional do espaço do casal.
 - Testes pgTAP de existência, RLS, funções, políticas e privilégios.
 
-## Pendência 1 — Supabase Cloud
+## Supabase Cloud — concluído pelo conector
 
-O projeto de desenvolvimento foi criado pelo proprietário e sua referência pública já foi identificada. Ainda é necessário autenticar o Supabase CLI, vincular o repositório local e validar a migration com:
+O projeto de desenvolvimento foi criado pelo proprietário. As migrations `initial_foundation` e `harden_denied_tables_and_foreign_keys` foram aplicadas e auditadas no projeto remoto em 03/08/2026. As seis tabelas públicas estão com RLS habilitado, sem leitura anônima de perfis, e o trigger de criação de perfil está ativo.
+
+O vínculo do CLI local continua útil para operações manuais futuras, mas não bloqueia mais a validação do schema:
 
 ```powershell
 pnpm exec supabase login
@@ -62,8 +64,8 @@ A auditoria registra uma vulnerabilidade moderada transitiva em `uuid@7.0.3`, us
 
 ## Gate para declarar a entrega totalmente aceita
 
-- [ ] Autenticar e vincular o Supabase CLI ao projeto de desenvolvimento.
-- [ ] Revisar o `db push --dry-run` e validar a migration no banco de desenvolvimento.
+- [ ] Autenticar e vincular o Supabase CLI ao projeto de desenvolvimento para operações manuais futuras.
+- [x] Aplicar e validar as migrations no banco de desenvolvimento.
 - [x] Autenticar o Expo/EAS CLI no projeto configurado.
 - [ ] Concluir e instalar o build interno Android; preparar o iOS quando aplicável.
 - [x] Enviar o código ao GitHub e validar a primeira execução da CI.

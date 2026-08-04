@@ -46,6 +46,21 @@ select is(
 );
 
 select is(
+  (
+    select count(*)::integer
+    from pg_policies
+    where schemaname = 'public'
+      and tablename in ('audit_logs', 'space_invitations')
+      and policyname in (
+        'audit_logs_deny_direct_access',
+        'space_invitations_deny_direct_access'
+      )
+  ),
+  2,
+  'tabelas internas possuem políticas explícitas de negação'
+);
+
+select is(
   has_table_privilege('anon', 'public.audit_logs', 'select'),
   false,
   'anon não pode consultar o log de auditoria'
@@ -53,4 +68,3 @@ select is(
 
 select * from finish();
 rollback;
-

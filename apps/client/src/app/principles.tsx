@@ -51,7 +51,7 @@ export default function PrinciplesScreen() {
             >
               <Text style={[styles.backText, { color: colors.text }]}>← Voltar</Text>
             </Pressable>
-            <BrandMark color={colors.brand} compact />
+            <BrandMark compact />
           </View>
 
           <View style={styles.intro}>
