@@ -1,7 +1,7 @@
 import * as Linking from 'expo-linking';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import {
   AuthScreen,
@@ -10,13 +10,13 @@ import {
   PrimaryButton,
   authFormStyles,
 } from '@/components/auth-screen';
-import { palette } from '@/constants/theme';
+import { useAppTheme } from '@/design-system/theme-provider';
 import { getAuthErrorMessage } from '@/lib/auth-errors';
 import { validateDisplayName, validateEmail, validateStrongPassword } from '@/lib/auth-validation';
 import { getSupabaseClient } from '@/lib/supabase';
 
 export default function SignUpScreen() {
-  const colors = useColorScheme() === 'dark' ? palette.dark : palette.light;
+  const { colors } = useAppTheme();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

@@ -1,57 +1,62 @@
 import { Platform } from 'react-native';
 
-export const palette = {
-  light: {
-    background: '#f8f5f0',
-    surface: '#ffffff',
-    surfaceMuted: '#efe9e1',
-    text: '#242126',
-    textMuted: '#6d666e',
-    border: '#ddd4ca',
-    brand: '#5d4f7c',
-    brandStrong: '#473a65',
-    accent: '#ba684f',
-    success: '#2f745f',
-    error: '#9b3a33',
-    onBrand: '#ffffff',
-  },
-  dark: {
-    background: '#171519',
-    surface: '#211f24',
-    surfaceMuted: '#2d2930',
-    text: '#f7f2eb',
-    textMuted: '#bbb2bb',
-    border: '#403a42',
-    brand: '#b8a5df',
-    brandStrong: '#d1c1ef',
-    accent: '#e6957c',
-    success: '#78bda6',
-    error: '#ffb4ab',
-    onBrand: '#21182d',
-  },
-} as const;
-
-export type AppPalette = (typeof palette)[keyof typeof palette];
+export { palette } from '@/constants/color-tokens';
+export type { AppPalette, ThemeName } from '@/constants/color-tokens';
 
 export const spacing = {
+  none: 0,
+  xxs: 2,
   xs: 4,
   sm: 8,
   md: 16,
   lg: 24,
   xl: 32,
   xxl: 48,
+  xxxl: 64,
 } as const;
 
 export const radii = {
+  xs: 6,
   sm: 10,
   md: 16,
   lg: 24,
+  xl: 32,
   pill: 999,
 } as const;
 
 export const typography = {
   display: Platform.select({ ios: 'Georgia', android: 'serif', web: 'Georgia' }),
   body: Platform.select({ ios: 'System', android: 'sans-serif', web: 'system-ui' }),
+  size: {
+    caption: 12,
+    bodySmall: 14,
+    body: 16,
+    titleSmall: 20,
+    title: 28,
+    display: 44,
+  },
+  lineHeight: {
+    caption: 18,
+    bodySmall: 21,
+    body: 25,
+    titleSmall: 26,
+    title: 34,
+    display: 50,
+  },
 } as const;
 
-export const maxContentWidth = 760;
+export const layout = {
+  maxContentWidth: 1120,
+  maxReadingWidth: 680,
+  minTouchTarget: 48,
+  compactBreakpoint: 640,
+  wideBreakpoint: 900,
+} as const;
+
+export const motion = {
+  fast: 120,
+  regular: 220,
+  slow: 360,
+} as const;
+
+export const maxContentWidth = layout.maxReadingWidth;

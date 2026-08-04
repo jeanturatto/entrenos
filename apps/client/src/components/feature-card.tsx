@@ -1,16 +1,17 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import type { AppPalette } from '@/constants/theme';
 import { radii, spacing, typography } from '@/constants/theme';
+import { useAppTheme } from '@/design-system/theme-provider';
 
 type FeatureCardProps = {
   symbol: string;
   title: string;
   description: string;
-  colors: AppPalette;
 };
 
-export function FeatureCard({ symbol, title, description, colors }: FeatureCardProps) {
+export function FeatureCard({ symbol, title, description }: FeatureCardProps) {
+  const { colors } = useAppTheme();
+
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <Text style={[styles.symbol, { color: colors.accent }]}>{symbol}</Text>

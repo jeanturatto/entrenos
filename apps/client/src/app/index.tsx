@@ -1,14 +1,17 @@
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
+import { InlineNotice } from '@/components/auth-screen';
 import { BrandMark } from '@/components/brand-mark';
 import { FeatureCard } from '@/components/feature-card';
-import { InlineNotice } from '@/components/auth-screen';
-import { maxContentWidth, palette, radii, spacing, typography } from '@/constants/theme';
+import { maxContentWidth, radii, spacing, typography } from '@/constants/theme';
+import { AppButton } from '@/design-system/app-button';
+import { useAppTheme } from '@/design-system/theme-provider';
 import { useAuth } from '@/providers/auth-provider';
 
 export default function HomeScreen() {
-  const colors = useColorScheme() === 'dark' ? palette.dark : palette.light;
+  const { colors } = useAppTheme();
+  const { width } = useWindowDimensions();
   const { session, isLoading, linkError, clearLinkError } = useAuth();
 
   const openPrimaryRoute = () => {
@@ -45,7 +48,10 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        <Text selectable style={[styles.title, { color: colors.text }]}>
+        <Text
+          selectable
+          style={[styles.title, width < 520 ? styles.compactTitle : null, { color: colors.text }]}
+        >
           A vida a dois, organizada com respeito.
         </Text>
         <Text selectable style={[styles.subtitle, { color: colors.textMuted }]}>
@@ -59,52 +65,35 @@ export default function HomeScreen() {
           symbol="01"
           title="Privacidade de verdade"
           description="Você decide o que é pessoal, compartilhado ou aparece apenas como ocupado."
-          colors={colors}
         />
         <FeatureCard
           symbol="02"
           title="Decisões sem suposições"
           description="Compromissos conjuntos passam por proposta, resposta e histórico transparente."
-          colors={colors}
         />
       </View>
 
       <View style={styles.actions}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={session ? 'Abrir área protegida' : 'Criar conta'}
+        <AppButton
+          label={session ? 'Abrir meu espaço' : 'Criar minha conta'}
           disabled={isLoading}
           onPress={openPrimaryRoute}
-          style={({ pressed }) => [
-            styles.primaryButton,
-            { backgroundColor: colors.brandStrong, opacity: isLoading ? 0.5 : pressed ? 0.86 : 1 },
-          ]}
-        >
-          <Text style={[styles.primaryButtonText, { color: colors.onBrand }]}>
-            {session ? 'Abrir meu espaço' : 'Criar minha conta'}
-          </Text>
-          <Text accessible={false} style={[styles.arrow, { color: colors.onBrand }]}>
-            →
-          </Text>
-        </Pressable>
+          accessibilityHint="Abre o próximo passo seguro da sua conta"
+        />
 
         {!session ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Entrar em uma conta existente"
+          <AppButton
+            label="Já tenho conta"
+            variant="secondary"
             onPress={() => router.push('/sign-in')}
-            style={({ pressed }) => [
-              styles.secondaryButton,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                opacity: pressed ? 0.72 : 1,
-              },
-            ]}
-          >
-            <Text style={[styles.secondaryButtonText, { color: colors.text }]}>Já tenho conta</Text>
-          </Pressable>
+          />
         ) : null}
+
+        <AppButton
+          label="Explorar protótipo"
+          variant="secondary"
+          onPress={() => router.push('/prototype')}
+        />
 
         <Pressable
           accessibilityRole="link"
@@ -113,6 +102,15 @@ export default function HomeScreen() {
           style={({ pressed }) => [{ padding: 12, opacity: pressed ? 0.62 : 1 }]}
         >
           <Text style={[styles.textLink, { color: colors.brand }]}>Conhecer os princípios</Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel="Conhecer o sistema visual do EntreNós"
+          onPress={() => router.push('/design-system')}
+          style={({ pressed }) => [{ padding: 12, opacity: pressed ? 0.62 : 1 }]}
+        >
+          <Text style={[styles.textLink, { color: colors.brand }]}>Ver sistema visual</Text>
         </Pressable>
       </View>
 
@@ -161,30 +159,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -1.7,
   },
+  compactTitle: { fontSize: 38, lineHeight: 44, letterSpacing: -1.1 },
   subtitle: { maxWidth: 610, fontFamily: typography.body, fontSize: 18, lineHeight: 29 },
   features: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   actions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
-  primaryButton: {
-    minHeight: 54,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.md,
-    borderCurve: 'continuous',
-  },
-  primaryButtonText: { fontSize: 16, fontWeight: '700' },
-  arrow: { fontSize: 22, lineHeight: 24 },
-  secondaryButton: {
-    minHeight: 54,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: radii.md,
-    borderCurve: 'continuous',
-  },
-  secondaryButtonText: { fontSize: 15, fontWeight: '700' },
   textLink: { fontSize: 14, fontWeight: '700' },
   platforms: {
     marginTop: 'auto',

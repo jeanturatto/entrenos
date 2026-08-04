@@ -3,10 +3,9 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { palette } from '@/constants/theme';
+import { AppThemeProvider, useAppTheme } from '@/design-system/theme-provider';
 import { AuthProvider, useAuth } from '@/providers/auth-provider';
 
 void SplashScreen.preventAutoHideAsync();
@@ -22,9 +21,20 @@ const queryClient = new QueryClient({
 
 function AppNavigator() {
   const { session, isLoading } = useAuth();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const colors = isDark ? palette.dark : palette.light;
+  const { colors, isDark } = useAppTheme();
+  const baseNavigationTheme = isDark ? DarkTheme : DefaultTheme;
+  const navigationTheme = {
+    ...baseNavigationTheme,
+    colors: {
+      ...baseNavigationTheme.colors,
+      background: colors.background,
+      card: colors.surface,
+      border: colors.border,
+      primary: colors.brand,
+      text: colors.text,
+      notification: colors.accent,
+    },
+  };
 
   useEffect(() => {
     if (!isLoading) {
@@ -33,7 +43,7 @@ function AppNavigator() {
   }, [isLoading]);
 
   return (
-    <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={navigationTheme}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
@@ -43,6 +53,20 @@ function AppNavigator() {
       >
         <Stack.Screen name="index" options={{ title: 'EntreNós' }} />
         <Stack.Screen name="principles" options={{ title: 'Princípios · EntreNós' }} />
+        <Stack.Screen name="design-system" options={{ title: 'Sistema visual · EntreNós' }} />
+        <Stack.Screen name="prototype" options={{ title: 'Protótipo · EntreNós' }} />
+        <Stack.Screen
+          name="prototype-action"
+          options={{
+            title: 'Nova ação',
+            presentation: 'modal',
+            headerShown: true,
+            headerShadowVisible: false,
+            headerStyle: { backgroundColor: colors.surface },
+            headerTintColor: colors.text,
+            headerBackButtonDisplayMode: 'minimal',
+          }}
+        />
 
         <Stack.Protected guard={isLoading || !session}>
           <Stack.Screen name="(auth)" />
@@ -59,11 +83,13 @@ function AppNavigator() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <AppNavigator />
-        </AuthProvider>
-      </QueryClientProvider>
+      <AppThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <AppNavigator />
+          </AuthProvider>
+        </QueryClientProvider>
+      </AppThemeProvider>
     </SafeAreaProvider>
   );
 }

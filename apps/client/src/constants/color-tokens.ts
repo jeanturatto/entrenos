@@ -1,0 +1,43 @@
+export const palette = {
+  light: {
+    background: '#f8f5f0',
+    surface: '#ffffff',
+    surfaceMuted: '#efe9e1',
+    surfaceRaised: '#ffffff',
+    text: '#242126',
+    textMuted: '#625b63',
+    border: '#d8cec4',
+    brand: '#5d4f7c',
+    brandStrong: '#473a65',
+    accent: '#984a35',
+    success: '#21624e',
+    warning: '#765000',
+    error: '#91312b',
+    info: '#285f8f',
+    focus: '#006c79',
+    onBrand: '#ffffff',
+    scrim: 'rgba(36, 33, 38, 0.56)',
+  },
+  dark: {
+    background: '#171519',
+    surface: '#211f24',
+    surfaceMuted: '#2d2930',
+    surfaceRaised: '#29262c',
+    text: '#f7f2eb',
+    textMuted: '#c8bfc7',
+    border: '#514a54',
+    brand: '#bfa8e8',
+    brandStrong: '#d1c1ef',
+    accent: '#f2a88e',
+    success: '#82cdb4',
+    warning: '#f3c56c',
+    error: '#ffb4ab',
+    info: '#90c9ff',
+    focus: '#68d4e2',
+    onBrand: '#21182d',
+    scrim: 'rgba(0, 0, 0, 0.68)',
+  },
+} as const;
+
+export type ThemeName = keyof typeof palette;
+export type AppPalette = (typeof palette)[ThemeName];

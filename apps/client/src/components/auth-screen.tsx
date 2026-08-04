@@ -1,18 +1,12 @@
 import type { PropsWithChildren, ReactNode } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  type TextInputProps,
-  View,
-  useColorScheme,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, type TextInputProps, View } from 'react-native';
 
 import { BrandMark } from '@/components/brand-mark';
-import { maxContentWidth, palette, radii, spacing, typography } from '@/constants/theme';
+import { maxContentWidth, radii, spacing, typography } from '@/constants/theme';
+import { AppButton } from '@/design-system/app-button';
+import { AppField } from '@/design-system/app-field';
+import { InlineNotice as Notice } from '@/design-system/inline-notice';
+import { useAppTheme } from '@/design-system/theme-provider';
 
 type AuthScreenProps = PropsWithChildren<{
   eyebrow: string;
@@ -34,7 +28,7 @@ type PrimaryButtonProps = {
 };
 
 export function AuthScreen({ eyebrow, title, description, footer, children }: AuthScreenProps) {
-  const colors = useColorScheme() === 'dark' ? palette.dark : palette.light;
+  const { colors } = useAppTheme();
 
   return (
     <ScrollView
@@ -72,66 +66,17 @@ export function AuthScreen({ eyebrow, title, description, footer, children }: Au
 }
 
 export function FormField({ label, hint, style, ...props }: FormFieldProps) {
-  const colors = useColorScheme() === 'dark' ? palette.dark : palette.light;
-
-  return (
-    <View style={styles.field}>
-      <Text selectable style={[styles.label, { color: colors.text }]}>
-        {label}
-      </Text>
-      <TextInput
-        {...props}
-        accessibilityLabel={props.accessibilityLabel ?? label}
-        placeholderTextColor={colors.textMuted}
-        selectionColor={colors.brand}
-        style={[
-          styles.input,
-          { backgroundColor: colors.background, borderColor: colors.border, color: colors.text },
-          style,
-        ]}
-      />
-      {hint ? (
-        <Text selectable style={[styles.hint, { color: colors.textMuted }]}>
-          {hint}
-        </Text>
-      ) : null}
-    </View>
-  );
+  return <AppField {...props} label={label} hint={hint} style={style} />;
 }
 
 export function PrimaryButton({ label, onPress, pending, disabled }: PrimaryButtonProps) {
-  const colors = useColorScheme() === 'dark' ? palette.dark : palette.light;
-  const isDisabled = pending || disabled;
-
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ busy: pending, disabled: isDisabled }}
-      disabled={isDisabled}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.primaryButton,
-        { backgroundColor: colors.brandStrong, opacity: isDisabled ? 0.5 : pressed ? 0.84 : 1 },
-      ]}
-    >
-      {pending ? <ActivityIndicator color={colors.onBrand} /> : null}
-      <Text style={[styles.primaryButtonText, { color: colors.onBrand }]}>{label}</Text>
-    </Pressable>
+    <AppButton label={label} onPress={onPress} pending={pending} disabled={disabled} fullWidth />
   );
 }
 
 export function InlineNotice({ tone, children }: PropsWithChildren<{ tone: 'error' | 'success' }>) {
-  const colors = useColorScheme() === 'dark' ? palette.dark : palette.light;
-  const color = tone === 'error' ? colors.error : colors.success;
-
-  return (
-    <View style={[styles.notice, { backgroundColor: `${color}16`, borderColor: `${color}55` }]}>
-      <Text selectable accessibilityLiveRegion="polite" style={[styles.noticeText, { color }]}>
-        {children}
-      </Text>
-    </View>
-  );
+  return <Notice tone={tone}>{children}</Notice>;
 }
 
 export const authFormStyles = StyleSheet.create({
@@ -179,35 +124,5 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     boxShadow: '0 12px 30px rgba(36, 33, 38, 0.08)',
   },
-  field: { gap: spacing.sm },
-  label: { fontSize: 14, fontWeight: '700' },
-  input: {
-    minHeight: 52,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: radii.md,
-    borderCurve: 'continuous',
-    fontSize: 16,
-  },
-  hint: { fontSize: 12, lineHeight: 18 },
-  primaryButton: {
-    minHeight: 52,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.md,
-    borderCurve: 'continuous',
-  },
-  primaryButtonText: { fontSize: 16, fontWeight: '800' },
-  notice: {
-    padding: spacing.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: radii.md,
-    borderCurve: 'continuous',
-  },
-  noticeText: { fontSize: 14, lineHeight: 21, fontWeight: '600' },
   footer: { width: '100%', maxWidth: 560, alignItems: 'center' },
 });

@@ -1,17 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  useColorScheme,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BrandMark } from '@/components/brand-mark';
-import { maxContentWidth, palette, radii, spacing, typography } from '@/constants/theme';
+import { maxContentWidth, spacing, typography } from '@/constants/theme';
+import { AppButton } from '@/design-system/app-button';
+import { AppCard } from '@/design-system/app-card';
+import { InlineNotice } from '@/design-system/inline-notice';
+import { useAppTheme } from '@/design-system/theme-provider';
 import { getSupabaseClient } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -23,7 +19,7 @@ type Profile = {
 };
 
 export default function DashboardScreen() {
-  const colors = useColorScheme() === 'dark' ? palette.dark : palette.light;
+  const { colors } = useAppTheme();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const profileQuery = useQuery({
@@ -84,22 +80,13 @@ export default function DashboardScreen() {
       </View>
 
       {profileQuery.error ? (
-        <View
-          style={[
-            styles.notice,
-            { borderColor: colors.error, backgroundColor: `${colors.error}14` },
-          ]}
-        >
-          <Text selectable style={{ color: colors.error }}>
-            Não foi possível carregar seu perfil. Tente novamente.
-          </Text>
-        </View>
+        <InlineNotice tone="error">
+          Não foi possível carregar seu perfil. Tente novamente.
+        </InlineNotice>
       ) : null}
 
       <View style={styles.grid}>
-        <View
-          style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
-        >
+        <AppCard style={styles.card}>
           <Text selectable style={[styles.cardKicker, { color: colors.success }]}>
             SESSÃO ATIVA
           </Text>
@@ -110,10 +97,8 @@ export default function DashboardScreen() {
             A sessão é renovada enquanto o app está ativo e armazenada com proteção nativa no
             dispositivo.
           </Text>
-        </View>
-        <View
-          style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
-        >
+        </AppCard>
+        <AppCard style={styles.card}>
           <Text selectable style={[styles.cardKicker, { color: colors.accent }]}>
             PRÓXIMO PASSO
           </Text>
@@ -124,29 +109,21 @@ export default function DashboardScreen() {
             O convite do parceiro será uma etapa separada e dependerá da concordância das duas
             pessoas.
           </Text>
-        </View>
+        </AppCard>
       </View>
 
       <View style={styles.account}>
         <Text selectable style={[styles.email, { color: colors.textMuted }]}>
           {user?.email}
         </Text>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => void signOut()}
-          style={({ pressed }) => [
-            styles.secondaryButton,
-            {
-              borderColor: colors.border,
-              backgroundColor: colors.surface,
-              opacity: pressed ? 0.72 : 1,
-            },
-          ]}
-        >
-          <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
-            Sair com segurança
-          </Text>
-        </Pressable>
+        <View style={styles.accountActions}>
+          <AppButton label="Explorar protótipo" onPress={() => router.push('/prototype')} />
+          <AppButton
+            label="Sair com segurança"
+            variant="secondary"
+            onPress={() => void signOut()}
+          />
+        </View>
       </View>
     </ScrollView>
   );
@@ -173,25 +150,12 @@ const styles = StyleSheet.create({
     minWidth: 250,
     flexBasis: 300,
     flexGrow: 1,
-    padding: spacing.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: radii.lg,
-    borderCurve: 'continuous',
     gap: spacing.sm,
   },
   cardKicker: { fontSize: 11, fontWeight: '800', letterSpacing: 1.1 },
   cardTitle: { fontFamily: typography.display, fontSize: 23, fontWeight: '700' },
   cardBody: { fontSize: 15, lineHeight: 23 },
-  notice: { padding: spacing.md, borderWidth: StyleSheet.hairlineWidth, borderRadius: radii.md },
   account: { gap: spacing.md, alignItems: 'flex-start', paddingTop: spacing.md },
+  accountActions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   email: { fontSize: 14 },
-  secondaryButton: {
-    minHeight: 48,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: radii.md,
-    borderCurve: 'continuous',
-  },
-  secondaryButtonText: { fontSize: 14, fontWeight: '800' },
 });

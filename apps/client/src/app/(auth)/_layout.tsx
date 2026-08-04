@@ -1,10 +1,9 @@
 import { Stack } from 'expo-router/stack';
-import { useColorScheme } from 'react-native';
 
-import { palette } from '@/constants/theme';
+import { useAppTheme } from '@/design-system/theme-provider';
 
 export default function AuthLayout() {
-  const colors = useColorScheme() === 'dark' ? palette.dark : palette.light;
+  const { colors } = useAppTheme();
 
   return (
     <Stack
