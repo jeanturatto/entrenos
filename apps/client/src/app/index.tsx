@@ -33,7 +33,7 @@ const firstSteps = [
     number: '03',
     title: 'Construa o espaço juntos',
     description:
-      'Os recursos do casal serão liberados por convite e concordância das duas pessoas.',
+      'Depois do convite, vocês já podem usar agenda, tarefas e compras no mesmo espaço.',
   },
 ] as const;
 
@@ -269,7 +269,7 @@ export default function HomeScreen() {
             Crie um espaço que respeita vocês dois.
           </Text>
           <Text selectable style={[styles.sectionDescription, { color: colors.textMuted }]}>
-            Sua primeira etapa é individual, segura e gratuita durante a validação inicial.
+            Crie sua conta gratuitamente e comece a organizar uma rotina real a dois.
           </Text>
         </View>
         <AppButton
